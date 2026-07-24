@@ -18,6 +18,8 @@ namespace FlightTracker.Systems
         private int _followEntityIndex = -1;
         private int _followEntityVersion = -1;
 
+        private string _selectedFlight = string.Empty;
+
         private float3 _smoothedFollowPosition;
         private bool _hasSmoothedFollowPosition;
 
@@ -74,7 +76,13 @@ namespace FlightTracker.Systems
                     );
                 }
 
-                controller.pivot = _smoothedFollowPosition;
+                const float PivotHeightOffset = 50f;
+
+                controller.pivot = new float3(
+                    _smoothedFollowPosition.x,
+                    flight.Y + PivotHeightOffset,
+                    _smoothedFollowPosition.z
+                );
 
                 return;
             }
@@ -83,6 +91,7 @@ namespace FlightTracker.Systems
             _followingAircraft = false;
             _followEntityIndex = -1;
             _followEntityVersion = -1;
+            _selectedFlight = string.Empty;
         }
 
         protected override void OnCreate()
@@ -90,6 +99,16 @@ namespace FlightTracker.Systems
             base.OnCreate();
 
             Mod.Log.Info("[FlightTracker] TrackerUISystem created.");
+
+
+            AddUpdateBinding(
+    new GetterValueBinding<string>(
+        MOD_UI,
+        "SelectedFlight",
+        GetSelectedFlight
+    )
+);
+
 
             try
             {
@@ -175,6 +194,8 @@ namespace FlightTracker.Systems
                 _followEntityIndex = -1;
                 _followEntityVersion = -1;
 
+                _selectedFlight = string.Empty;
+
                 Mod.Log.Info("Stopped following aircraft.");
                 return;
             }
@@ -209,11 +230,19 @@ namespace FlightTracker.Systems
             _followingAircraft = true;
             _hasSmoothedFollowPosition = false;
 
+            _selectedFlight = $"{index}|{version}";
+
             Mod.Log.Info(
     $"Now following aircraft {flight.Name}"
 );
 
            
+        }
+
+
+        private string GetSelectedFlight()
+        {
+            return _selectedFlight;
         }
 
         private TrackerSystem GetTrackerSystem()
