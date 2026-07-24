@@ -41,12 +41,7 @@ namespace FlightTracker.Systems
                 ComponentType.ReadOnly<Transform>()
             );
 
-            /*
-             * Do not use RequireForUpdate here.
-             *
-             * The system can safely remain active while no aircraft exist.
-             * OnUpdate will simply return when the query is empty.
-             */
+          
             _gameReady = false;
         }
 

@@ -31,8 +31,7 @@ namespace FlightTracker
                 Log.Info($"Current mod asset at {asset.path}");
             }
 
-            m_Setting = new Setting(this);
-            m_Setting.RegisterInOptionsUI();
+
 
             updateSystem.UpdateAfter<TrackerSystem>(
                SystemUpdatePhase.GameSimulation
@@ -40,21 +39,13 @@ namespace FlightTracker
 
             updateSystem.UpdateAfter<TrackerUISystem>(
                 SystemUpdatePhase.UIUpdate
-            );
+            
 
-            GameManager.instance.localizationManager.AddSource(
-                "en-US",
-                new LocaleEN(m_Setting)
-            );
-
-
-            AssetDatabase.global.LoadSettings(
-                nameof(FlightTracker),
-                m_Setting,
-                new Setting(this)
             );
         }
 
+
+   
   
 
         public void OnDispose()
