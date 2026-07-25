@@ -299,11 +299,12 @@ namespace FlightTracker.Systems
         }
 
         private string DetermineStatus(
-            Entity entity,
-            float altitude,
-            float speed)
+    Entity entity,
+    float altitude,
+    float speed)
         {
             const float stoppedSpeed = 0.5f;
+            const float minimalMovementSpeed = 5f;
             const float taxiSpeed = 18f;
             const float airborneAltitude = 35f;
             const float altitudeTolerance = 0.25f;
@@ -315,33 +316,48 @@ namespace FlightTracker.Systems
                 history = new AircraftHistory
                 {
                     PreviousAltitude = altitude,
-
-                    LastStatus =
-                        altitude > airborneAltitude
-                            ? "Airborne"
-                            : "Landed"
+                    LastStatus = "At Gate"
                 };
             }
 
             float altitudeChange =
-                altitude -
-                history.PreviousAltitude;
+                altitude - history.PreviousAltitude;
+
+            bool hasNoMovement =
+                speed <= stoppedSpeed;
+
+            bool hasMinimalMovement =
+                speed > stoppedSpeed &&
+                speed <= minimalMovementSpeed;
+
+            bool hasNoAltitudeChange =
+                math.abs(altitudeChange) <= altitudeTolerance;
 
             string status;
 
-            if (altitude > airborneAltitude)
+            // Do not change this: fully stopped aircraft remain At Gate.
+            if (hasNoMovement && hasNoAltitudeChange)
             {
-                if (
-                    altitudeChange >
-                    altitudeTolerance
-                )
+                status = "At Gate";
+            }
+            // Small movement without meaningful altitude change means taxiing.
+            else if (hasMinimalMovement && hasNoAltitudeChange)
+            {
+                status =
+                    history.LastStatus is
+                        "Arriving" or
+                        "Landed" or
+                        "Taxiing to Gate"
+                        ? "Taxiing to Gate"
+                        : "Taxiing for Departure";
+            }
+            else if (altitude > airborneAltitude)
+            {
+                if (altitudeChange > altitudeTolerance)
                 {
                     status = "Departed";
                 }
-                else if (
-                    altitudeChange <
-                    -altitudeTolerance
-                )
+                else if (altitudeChange < -altitudeTolerance)
                 {
                     status = "Arriving";
                 }
@@ -350,27 +366,20 @@ namespace FlightTracker.Systems
                     status = "Airborne";
                 }
             }
-            else if (speed <= stoppedSpeed)
-            {
-                status =
-                    history.LastStatus is
-                        "Arriving" or "Airborne"
-                        ? "Landed"
-                        : "At Gate";
-            }
             else if (speed <= taxiSpeed)
             {
                 status =
                     history.LastStatus is
-                        "Landed" or "Arriving"
+                        "Arriving" or
+                        "Landed" or
+                        "Taxiing to Gate"
                         ? "Taxiing to Gate"
                         : "Taxiing for Departure";
             }
             else
             {
                 status =
-                    altitudeChange >
-                    altitudeTolerance
+                    altitudeChange > altitudeTolerance
                         ? "Taking Off"
                         : "Landing";
             }

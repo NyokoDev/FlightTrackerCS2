@@ -210,3 +210,23 @@
     font-size: 10rem;
     font-weight: 600;
 }
+
+.flightTrackerRadar__radarButton {
+    width: 42rem;
+    height: 42rem;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 0;
+
+    border: none;
+    border-radius: 6rem;
+
+    background: #183a63;
+    color: #ffffff;
+
+    cursor: pointer;
+    
+}

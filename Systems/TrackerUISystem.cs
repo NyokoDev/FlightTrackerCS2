@@ -101,6 +101,8 @@ namespace FlightTracker.Systems
             Mod.Log.Info("[FlightTracker] TrackerUISystem created.");
 
 
+            RadarBindings();
+
             AddUpdateBinding(
     new GetterValueBinding<string>(
         MOD_UI,
@@ -169,6 +171,51 @@ namespace FlightTracker.Systems
             }
         }
 
+        private void RadarBindings()
+        {
+            AddUpdateBinding(
+        new GetterValueBinding<string[]>(
+            MOD_UI,
+            "RadarFlights",
+            GetRadarFlights,
+            new ArrayWriter<string>(
+                new StringWriter()
+            )
+        )
+    );
+        }
+
+        private string[] GetRadarFlights()
+        {
+            TrackerSystem tracker = GetTrackerSystem();
+
+            if (tracker?.TrackedFlights == null)
+                return Array.Empty<string>(); 
+                     
+
+            string[] result = new string[tracker.TrackedFlights.Count];
+
+            for (int i = 0; i < tracker.TrackedFlights.Count; i++)
+            {
+                TrackedFlight flight = tracker.TrackedFlights[i];
+
+                float x = (i % 5) * 250f - 500f;
+                float z = (i / 5) * 250f - 500f;
+
+                result[i] = string.Join(
+                    "|",
+                    i.ToString(CultureInfo.InvariantCulture),
+                    flight.Name ?? "Unknown Aircraft",
+                    flight.Altitude.ToString(CultureInfo.InvariantCulture),
+                    flight.Speed.ToString(CultureInfo.InvariantCulture),
+                    flight.Status ?? "Unknown",
+                    x.ToString(CultureInfo.InvariantCulture),
+                    z.ToString(CultureInfo.InvariantCulture)
+                );
+            }
+
+            return result;
+        }
 
         private void FocusAircraft(string data)
         {

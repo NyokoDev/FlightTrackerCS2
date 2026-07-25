@@ -1,0 +1,124 @@
+.FLRadar {
+    position: absolute;
+
+    width: 500rem;
+    height: 500rem;
+
+    overflow: hidden;
+
+    background: #000;
+    border-radius: 12rem;
+
+    user-select: none;
+    touch-action: none;
+    cursor: move;
+}
+
+.FLRadarMapPlaceholder {
+    position: absolute;
+    inset: 0;
+
+    width: 100%;
+    height: 100%;
+
+    overflow: hidden;
+    background: #000;
+}
+
+.FLRadarCloseButton {
+    position: absolute;
+    top: 8rem;
+    right: 8rem;
+    z-index: 100;
+
+    width: 30rem;
+    height: 30rem;
+
+    padding: 0;
+    border: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: rgba(255, 255, 255, 0.14);
+    color: #fff;
+
+    font-size: 20rem;
+    line-height: 1;
+
+    cursor: pointer;
+}
+
+.FLRadarAircraft {
+    position: absolute;
+    z-index: 10;
+
+    width: 100rem;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    transform: translate(-50%, -50%);
+
+    cursor: default;
+    pointer-events: none;
+}
+
+.FLRadarAircraftIcon {
+    width: 38rem;
+    height: 38rem;
+
+    object-fit: contain;
+    transform-origin: center;
+
+    pointer-events: none;
+}
+
+.FLRadarAircraftLabel {
+    display: block;
+
+    max-width: 110rem;
+    margin-top: 5rem;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    color: #fff;
+
+    font-size: 10rem;
+    font-weight: 500;
+    line-height: 1.2;
+    text-align: center;
+
+    text-shadow:
+        0 1rem 2rem #000,
+        0 0 4rem #000;
+
+    pointer-events: none;
+}
+
+.FLRadarEmpty {
+    position: absolute;
+    inset: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 14rem;
+
+    pointer-events: none;
+}
+
+.FLRadarAircraftIcon {
+    width: 38rem;
+    height: 38rem;
+
+    filter:invert(100%);
+
+    pointer-events: none;
+}
