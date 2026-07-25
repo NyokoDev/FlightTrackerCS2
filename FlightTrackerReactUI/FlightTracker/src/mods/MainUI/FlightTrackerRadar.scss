@@ -1,0 +1,212 @@
+.flightTrackerRadar {
+    position: fixed;
+    left: 0;
+    top: 0;
+
+    z-index: 999999;
+
+    width: 500rem;
+    height: 500rem;
+
+    display: flex;
+    flex-direction: column;
+
+    background: rgba(24, 27, 34, 0.96);
+    border: 1.2rem solid rgba(255,255,255,.12);
+    border-radius: 10rem;
+
+    color: white;
+    overflow: hidden;
+    overflow-y: auto;
+
+    box-shadow: 0 10rem 30rem rgba(0,0,0,.35);
+
+    &__header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+
+        padding: 18rem 20rem;
+
+        border-bottom: 1rem solid rgba(255,255,255,.08);
+    }
+
+    &__title {
+        font-size: 20rem;
+        font-weight: 700;
+    }
+
+    &__subtitle {
+        margin-top: 3rem;
+
+        font-size: 12rem;
+        opacity: .6;
+    }
+
+    &__count {
+        min-width: 40rem;
+
+        padding: 6rem 10rem;
+
+        text-align: center;
+
+        font-size: 15rem;
+        font-weight: 700;
+
+        border-radius: 5rem;
+        background: rgba(255,255,255,.08);
+    }
+
+    &__list {
+        display: flex;
+        flex-direction: column;
+        overflow-y: auto;
+    }
+
+    &__empty {
+        margin: auto;
+
+        font-size: 14rem;
+        opacity: .55;
+    }
+
+    &__flight {
+        display: flex;
+        flex-direction: column;
+
+        gap: 10rem;
+
+        padding: 18rem 20rem;
+
+        border-bottom: 1rem solid rgba(255,255,255,.06);
+
+        transition: background .15s;
+
+        &:hover {
+            background: rgba(255,255,255,.04);
+        }
+
+        &:last-child {
+            border-bottom: none;
+        }
+    }
+
+    &__flightMain {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    &__aircraftName {
+        font-size: 16rem;
+        font-weight: 700;
+    }
+
+    &__route {
+        font-size: 11rem;
+        color: rgba(255,255,255,.55);
+    }
+
+    &__telemetry {
+        display: grid;
+        grid-template-columns: repeat(2, auto);
+        gap: 6rem 20rem;
+
+        font-size: 12rem;
+        color: rgba(255,255,255,.72);
+    }
+
+    &__telemetryItem {
+        display: flex;
+        gap: 4rem;
+    }
+
+    &__telemetryLabel {
+        color: rgba(255,255,255,.45);
+    }
+
+    &__telemetryValue {
+        font-weight: 600;
+    }
+
+    &__status {
+        padding: 3rem 8rem;
+
+        border-radius: 4rem;
+
+        font-size: 12rem;
+        font-weight: 600;
+
+        white-space: nowrap;
+
+        background: rgba(255,255,255,.08);
+    }
+
+    &__status--airborne {
+        background: rgba(0,180,255,.22);
+        color: #80d9ff;
+    }
+
+    &__status--departed {
+        background: rgba(0,200,120,.22);
+        color: #8dffbf;
+    }
+
+    &__status--arriving {
+        background: rgba(255,170,0,.22);
+        color: #ffd67a;
+    }
+
+    &__status--landing {
+        background: rgba(255,140,0,.22);
+        color: #ffc37a;
+    }
+
+    &__status--taking-off {
+        background: rgba(90,140,255,.22);
+        color: #b6ccff;
+    }
+
+    &__status--taxiing {
+        background: rgba(180,180,180,.22);
+        color: #f0f0f0;
+    }
+
+    &__status--at-gate {
+        background: rgba(150,110,255,.22);
+        color: #d8c9ff;
+    }
+
+    &__status--landed {
+        background: rgba(70,210,120,.22);
+        color: #b7ffd1;
+    }
+
+    &__status--unknown {
+        background: rgba(255,255,255,.08);
+        color: white;
+    }
+}
+
+
+.flightTrackerRadar__flight--focused {
+    background-color: rgba(65, 145, 255, 0.18);
+    border-color: rgba(65, 145, 255, 0.8);
+}
+
+.flightTrackerRadar__badges {
+    display: flex;
+    align-items: center;
+    gap: 6rem;
+}
+
+.flightTrackerRadar__focusedBadge {
+    padding: 2rem 6rem;
+    border-radius: 4rem;
+
+    background-color: rgba(65, 145, 255, 0.9);
+    color: white;
+
+    font-size: 10rem;
+    font-weight: 600;
+}

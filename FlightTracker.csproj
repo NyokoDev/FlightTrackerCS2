@@ -74,20 +74,30 @@
 	</ItemGroup>
 
 	<!-- Automatically build the React UI whenever the mod is built -->
-	<Target Name="BuildReactUI" BeforeTargets="Build">
+<Target Name="BuildReactUI" BeforeTargets="Build">
 
-		<PropertyGroup>
-			<ReactProjectDirectory>$(MSBuildProjectDirectory)\..\FlightTrackerReactUI\FlightTracker</ReactProjectDirectory>
-		</PropertyGroup>
+	<PropertyGroup>
+		<ReactProjectDirectory>$(MSBuildProjectDirectory)\FlightTrackerReactUI\FlightTracker</ReactProjectDirectory>
+	</PropertyGroup>
 
-		<Message Text="Building FlightTracker React UI..." Importance="high" />
+	<Message Text="Building FlightTracker React UI from $(ReactProjectDirectory)..." Importance="high" />
 
-		<Error Condition="!Exists('$(ReactProjectDirectory)\package.json')" Text="package.json not found at $(ReactProjectDirectory)" />
+	<Error
+		Condition="!Exists('$(ReactProjectDirectory)\package.json')"
+		Text="package.json not found at $(ReactProjectDirectory)"
+	/>
 
-		<Exec Command="npm.cmd install" WorkingDirectory="$(ReactProjectDirectory)" Condition="!Exists('$(ReactProjectDirectory)\node_modules')" />
+	<Exec
+		Command="npm.cmd install"
+		WorkingDirectory="$(ReactProjectDirectory)"
+		Condition="!Exists('$(ReactProjectDirectory)\node_modules')"
+	/>
 
-		<Exec Command="npm.cmd run build" WorkingDirectory="$(ReactProjectDirectory)" />
+	<Exec
+		Command="npm.cmd run build"
+		WorkingDirectory="$(ReactProjectDirectory)"
+	/>
 
-	</Target>
+</Target>
 
 </Project>
