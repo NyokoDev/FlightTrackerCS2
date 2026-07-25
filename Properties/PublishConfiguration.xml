@@ -1,14 +1,24 @@
 ﻿<Publish>
 	<!--Id must be set in order to update existed mod. it is not required for publishing mod for the first time-->
-	<ModId Value="" />
+	<ModId Value="152580" />
 	<!--Name of the mod to display to players-->
 	<DisplayName Value="Flight Tracker" />
 	<!--Short description of the mod-->
-	<ShortDescription Value="Flight Tracker Radar" />
+	<ShortDescription Value="Track every aircraft currently active in your city." />
 	<!--Long description of the mod. Single line or multi line. Supports minimal markdown subset-->
 	<!--LongDescription Value="Flight Tracker Radar" /-->
 	<LongDescription>
-Flight Tracker Radar
+		Flight Tracker Radar
+
+		Track every aircraft currently active in your city from a single radar interface. Aircraft are automatically classified based on their current behavior, including At Gate, Taxiing, Taking Off, Airborne, Descent, and Landing.
+
+		View a live list of every aircraft, including its name, altitude, speed, position, and current flight status. Selecting an aircraft instantly focuses the camera on it, allowing you to follow it anywhere in your city. Select it again to stop following.
+
+		The integrated radar provides a real-time overview of aircraft activity across the map, making it easy to monitor airport operations and air traffic at a glance.
+
+		The mod's icon can be found in the Universal Mod Menu.
+
+		If you enjoy this mod and would like to support future updates, consider supporting me on Ko-fi.
 	</LongDescription>
 	<!--Thumbnail-->
 	<Thumbnail Value="Properties/Thumbnail.png" />
@@ -19,15 +29,15 @@ Flight Tracker Radar
 	<!--Link to the forum post where the mod can be discussed-->
 	<ForumLink Value="https://forum.paradoxplaza.com/forum/threads/flight-tracker.1936160/" />
 	<!--Version of the mod-->
-	<ModVersion Value="1.0" />
+	<ModVersion Value="1.1" />
 	<!--Recommended version of the base game to use the mod-->
-	<GameVersion Value="1.0.*" />
+	<GameVersion Value="1.*" />
 	<!--Dependency for the mod, can be set multiple times-->
 	<Dependency Id="" />
 	<!--Required DLC, can be set multiple times. Supported values are "Landmark Buildings", "San Fransisco Set", "Beach Properties", "Urban Promenades", "Modern Architecture"-->
 	<RequiredDLC Value="" />
 	<!--Change log for new version. Single line or multi line. Supports minimal markdown subset-->
-	<ChangeLog Value="Initial release." />
+	<ChangeLog Value="Refactor airborne, taxiing, At gate and Landing variables." />
 	<!--<ChangeLog>
 	</ChangeLog>-->
 	<!--External link, can be set multiple times. supported types are "discord", "github", "youtube", "twitch", "x", "paypal", "patreon", "buymeacoffee", "kofi", "crowdin", "gitlab", "gofundme"-->
