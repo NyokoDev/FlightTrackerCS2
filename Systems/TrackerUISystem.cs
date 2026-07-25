@@ -362,8 +362,8 @@ namespace FlightTracker.Systems
                         FormatNumber(flight.X),
                         FormatNumber(flight.Y),
                         FormatNumber(flight.Z),
-                        FormatNumber(flight.Speed),
-                        FormatNumber(flight.Altitude)
+                        FormatNumber(flight.Altitude),
+                        FormatNumber(flight.Speed)
                     );
                 }
                 catch (Exception exception)

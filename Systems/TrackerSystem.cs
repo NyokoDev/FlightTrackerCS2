@@ -19,9 +19,10 @@ namespace FlightTracker.Systems
         private readonly Dictionary<Entity, AircraftHistory> _aircraftHistory = new();
 
         private uint _updateCounter;
-        private bool _gameReady;
+        private bool _loggedQueryState;
 
-        public IReadOnlyList<TrackedFlight> TrackedFlights => _trackedFlights;
+        public IReadOnlyList<TrackedFlight> TrackedFlights =>
+            _trackedFlights;
 
         private struct AircraftHistory
         {
@@ -41,60 +42,91 @@ namespace FlightTracker.Systems
                 ComponentType.ReadOnly<Transform>()
             );
 
-          
-            _gameReady = false;
+            _updateCounter = 29;
+
+            Mod.Log.Info(
+                "[FlightTracker] TrackerSystem created."
+            );
         }
 
         protected override void OnGamePreload(
-    Purpose purpose,
-    GameMode mode)
+            Purpose purpose,
+            GameMode mode)
         {
             base.OnGamePreload(purpose, mode);
 
-            _gameReady = false;
-            _updateCounter = 0;
-
             _trackedFlights.Clear();
             _aircraftHistory.Clear();
+
+            _updateCounter = 29;
+            _loggedQueryState = false;
+
+            Mod.Log.Info(
+                $"[FlightTracker] Game preload. Purpose={purpose}, Mode={mode}"
+            );
         }
 
         protected override void OnGameLoadingComplete(
-    Purpose purpose,
-    GameMode mode)
+            Purpose purpose,
+            GameMode mode)
         {
             base.OnGameLoadingComplete(purpose, mode);
 
-            _gameReady =
-                mode == GameMode.Game ||
-                mode == GameMode.Editor;
+            _updateCounter = 29;
+            _loggedQueryState = false;
+
+            Mod.Log.Info(
+                $"[FlightTracker] Game loading complete. Purpose={purpose}, Mode={mode}"
+            );
         }
 
         protected override void OnUpdate()
         {
-            if (!_gameReady)
-                return;
-
-            if (_aircraftQuery.IsEmptyIgnoreFilter)
-            {
-                _trackedFlights.Clear();
-                _aircraftHistory.Clear();
-                return;
-            }
-
             _updateCounter++;
 
-            if (_updateCounter % 30 != 0)
+            if (_updateCounter < 30)
                 return;
 
-            UpdateAircraftList();
+            _updateCounter = 0;
+
+            try
+            {
+                UpdateAircraftList();
+            }
+            catch (Exception exception)
+            {
+                Mod.Log.Error(
+                    $"[FlightTracker] Aircraft update failed: {exception}"
+                );
+            }
         }
 
         private void UpdateAircraftList()
         {
             _trackedFlights.Clear();
 
+            int queryCount =
+                _aircraftQuery.CalculateEntityCount();
+
+            if (!_loggedQueryState)
+            {
+                Mod.Log.Info(
+                    $"[FlightTracker] PrefabRef + Transform entities: {queryCount}"
+                );
+
+                _loggedQueryState = true;
+            }
+
+            if (queryCount == 0)
+            {
+                _aircraftHistory.Clear();
+                return;
+            }
+
             using NativeArray<Entity> entities =
-                _aircraftQuery.ToEntityArray(Allocator.Temp);
+                _aircraftQuery.ToEntityArray(
+                    Allocator.Temp
+                );
 
             using NativeArray<PrefabRef> prefabRefs =
                 _aircraftQuery.ToComponentDataArray<PrefabRef>(
@@ -108,21 +140,33 @@ namespace FlightTracker.Systems
 
             HashSet<Entity> currentAircraft = new();
 
+            int validPrefabCount = 0;
+            int airplaneCount = 0;
+
             for (int i = 0; i < entities.Length; i++)
             {
                 Entity entity = entities[i];
                 PrefabRef prefabRef = prefabRefs[i];
-                Transform transform = transforms[i];
 
-                if (!TryGetAirplanePrefab(
+                if (prefabRef.m_Prefab == Entity.Null)
+                    continue;
+
+                if (!_prefabSystem.TryGetPrefab(
                         prefabRef.m_Prefab,
-                        out AirplanePrefab airplanePrefab))
+                        out PrefabBase prefab))
                 {
                     continue;
                 }
 
+                validPrefabCount++;
+
+                if (prefab is not AirplanePrefab airplanePrefab)
+                    continue;
+
+                airplaneCount++;
                 currentAircraft.Add(entity);
 
+                Transform transform = transforms[i];
                 float3 position = transform.m_Position;
                 float speed = GetAircraftSpeed(entity);
 
@@ -138,7 +182,10 @@ namespace FlightTracker.Systems
                         EntityIndex = entity.Index,
                         EntityVersion = entity.Version,
 
-                        Name = GetAircraftName(airplanePrefab),
+                        Name = GetAircraftName(
+                            airplanePrefab
+                        ),
+
                         Status = status,
 
                         X = position.x,
@@ -160,27 +207,62 @@ namespace FlightTracker.Systems
                     StringComparison.OrdinalIgnoreCase
                 )
             );
+
+            Mod.Log.Info(
+                $"[FlightTracker] Query={entities.Length}, " +
+                $"valid prefabs={validPrefabCount}, " +
+                $"airplanes={airplaneCount}, " +
+                $"tracked={_trackedFlights.Count}"
+            );
+
+            if (
+                airplaneCount == 0 &&
+                validPrefabCount > 0
+            )
+            {
+                LogPrefabTypes(
+                    prefabRefs,
+                    20
+                );
+            }
         }
 
-        private bool TryGetAirplanePrefab(
-            Entity prefabEntity,
-            out AirplanePrefab airplanePrefab)
+        private void LogPrefabTypes(
+            NativeArray<PrefabRef> prefabRefs,
+            int maximum)
         {
-            airplanePrefab = null;
+            HashSet<string> loggedTypes = new();
 
-            if (prefabEntity == Entity.Null)
-                return false;
-
-            if (!_prefabSystem.TryGetPrefab(
-                    prefabEntity,
-                    out PrefabBase prefab))
+            for (
+                int i = 0;
+                i < prefabRefs.Length &&
+                loggedTypes.Count < maximum;
+                i++)
             {
-                return false;
+                Entity prefabEntity =
+                    prefabRefs[i].m_Prefab;
+
+                if (prefabEntity == Entity.Null)
+                    continue;
+
+                if (!_prefabSystem.TryGetPrefab(
+                        prefabEntity,
+                        out PrefabBase prefab))
+                {
+                    continue;
+                }
+
+                string prefabType =
+                    prefab?.GetType().FullName ??
+                    "null";
+
+                if (!loggedTypes.Add(prefabType))
+                    continue;
+
+                Mod.Log.Info(
+                    $"[FlightTracker] Observed prefab type: {prefabType}"
+                );
             }
-
-            airplanePrefab = prefab as AirplanePrefab;
-
-            return airplanePrefab != null;
         }
 
         private static string GetAircraftName(
@@ -189,20 +271,31 @@ namespace FlightTracker.Systems
             if (airplanePrefab == null)
                 return "Unknown Aircraft";
 
-            return string.IsNullOrWhiteSpace(airplanePrefab.name)
+            return string.IsNullOrWhiteSpace(
+                airplanePrefab.name
+            )
                 ? "Unnamed Aircraft"
                 : airplanePrefab.name;
         }
 
-        private float GetAircraftSpeed(Entity entity)
+        private float GetAircraftSpeed(
+            Entity entity)
         {
-            if (!EntityManager.HasComponent<Moving>(entity))
+            if (!EntityManager.HasComponent<Moving>(
+                    entity
+                ))
+            {
                 return 0f;
+            }
 
             Moving moving =
-                EntityManager.GetComponentData<Moving>(entity);
+                EntityManager.GetComponentData<Moving>(
+                    entity
+                );
 
-            return math.length(moving.m_Velocity);
+            return math.length(
+                moving.m_Velocity
+            );
         }
 
         private string DetermineStatus(
@@ -223,24 +316,32 @@ namespace FlightTracker.Systems
                 {
                     PreviousAltitude = altitude,
 
-                    LastStatus = altitude > airborneAltitude
-                        ? "Airborne"
-                        : "Landed"
+                    LastStatus =
+                        altitude > airborneAltitude
+                            ? "Airborne"
+                            : "Landed"
                 };
             }
 
             float altitudeChange =
-                altitude - history.PreviousAltitude;
+                altitude -
+                history.PreviousAltitude;
 
             string status;
 
             if (altitude > airborneAltitude)
             {
-                if (altitudeChange > altitudeTolerance)
+                if (
+                    altitudeChange >
+                    altitudeTolerance
+                )
                 {
                     status = "Departed";
                 }
-                else if (altitudeChange < -altitudeTolerance)
+                else if (
+                    altitudeChange <
+                    -altitudeTolerance
+                )
                 {
                     status = "Arriving";
                 }
@@ -252,29 +353,34 @@ namespace FlightTracker.Systems
             else if (speed <= stoppedSpeed)
             {
                 status =
-                    history.LastStatus is "Arriving" or "Airborne"
+                    history.LastStatus is
+                        "Arriving" or "Airborne"
                         ? "Landed"
                         : "At Gate";
             }
             else if (speed <= taxiSpeed)
             {
                 status =
-                    history.LastStatus is "Landed" or "Arriving"
+                    history.LastStatus is
+                        "Landed" or "Arriving"
                         ? "Taxiing to Gate"
                         : "Taxiing for Departure";
             }
             else
             {
-                status = altitudeChange > altitudeTolerance
-                    ? "Taking Off"
-                    : "Landing";
+                status =
+                    altitudeChange >
+                    altitudeTolerance
+                        ? "Taking Off"
+                        : "Landing";
             }
 
-            _aircraftHistory[entity] = new AircraftHistory
-            {
-                PreviousAltitude = altitude,
-                LastStatus = status
-            };
+            _aircraftHistory[entity] =
+                new AircraftHistory
+                {
+                    PreviousAltitude = altitude,
+                    LastStatus = status
+                };
 
             return status;
         }
@@ -287,28 +393,44 @@ namespace FlightTracker.Systems
 
             List<Entity> removedEntities = null;
 
-            foreach (Entity trackedEntity in _aircraftHistory.Keys)
+            foreach (
+                Entity trackedEntity in
+                _aircraftHistory.Keys
+            )
             {
-                if (currentAircraft.Contains(trackedEntity))
+                if (
+                    currentAircraft.Contains(
+                        trackedEntity
+                    )
+                )
+                {
                     continue;
+                }
 
-                removedEntities ??= new List<Entity>();
-                removedEntities.Add(trackedEntity);
+                removedEntities ??=
+                    new List<Entity>();
+
+                removedEntities.Add(
+                    trackedEntity
+                );
             }
 
             if (removedEntities == null)
                 return;
 
-            foreach (Entity removedEntity in removedEntities)
+            foreach (
+                Entity removedEntity in
+                removedEntities
+            )
             {
-                _aircraftHistory.Remove(removedEntity);
+                _aircraftHistory.Remove(
+                    removedEntity
+                );
             }
         }
 
         protected override void OnDestroy()
         {
-            _gameReady = false;
-
             _trackedFlights.Clear();
             _aircraftHistory.Clear();
 

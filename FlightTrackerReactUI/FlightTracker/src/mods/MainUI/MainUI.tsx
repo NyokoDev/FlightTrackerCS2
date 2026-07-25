@@ -337,47 +337,73 @@ function FlightRow({
 function parseTrackedFlight(
     value: string
 ): TrackedFlight | null {
-    const parts = value.split("|");
-
-    if (parts.length !== 9) {
+    if (!value) {
         console.warn(
-            "Flight Tracker: Invalid tracked flight value:",
-            value
+            "[FlightTracker] Received empty flight string"
         );
+
         return null;
     }
 
-    const entityIndex = Number.parseInt(parts[0], 10);
-    const entityVersion = Number.parseInt(parts[1], 10);
+    const parts = value.split("|");
 
-    const x = Number.parseFloat(parts[4]);
-    const y = Number.parseFloat(parts[5]);
-    const z = Number.parseFloat(parts[6]);
+    console.log(
+        "[FlightTracker] Parsing:",
+        value,
+        "fields:",
+        parts.length
+    );
 
-    const altitude = Number.parseFloat(parts[7]);
-    const speed = Number.parseFloat(parts[8]);
+    if (parts.length !== 9) {
+        console.warn(
+            `[FlightTracker] Expected 9 fields but received ${parts.length}:`,
+            parts
+        );
+
+        return null;
+    }
+
+    const entityIndex =
+        Number.parseInt(parts[0], 10);
+
+    const entityVersion =
+        Number.parseInt(parts[1], 10);
+
+    const speed =
+        Number.parseFloat(parts[7]);
+
+    const altitude =
+        Number.parseFloat(parts[8]);
 
     if (
         !Number.isFinite(entityIndex) ||
         !Number.isFinite(entityVersion) ||
-        !Number.isFinite(x) ||
-        !Number.isFinite(y) ||
-        !Number.isFinite(z) ||
-        !Number.isFinite(altitude) ||
-        !Number.isFinite(speed)
+        !Number.isFinite(speed) ||
+        !Number.isFinite(altitude)
     ) {
         console.warn(
-            "Flight Tracker: Invalid numerical flight data:",
-            value
+            "[FlightTracker] Invalid numeric flight data:",
+            {
+                value,
+                entityIndex,
+                entityVersion,
+                speed,
+                altitude
+            }
         );
+
         return null;
     }
 
     return {
         entityIndex,
         entityVersion,
-        name: parts[2] || "Unknown Aircraft",
-        status: parts[3] || "Unknown",
+        name:
+            parts[2]?.trim() ||
+            "Unknown Aircraft",
+        status:
+            parts[3]?.trim() ||
+            "Unknown",
         altitude,
         speed
     };
