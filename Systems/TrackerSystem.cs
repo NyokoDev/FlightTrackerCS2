@@ -304,10 +304,13 @@ namespace FlightTracker.Systems
     float speed)
         {
             const float stoppedSpeed = 0.5f;
-            const float minimalMovementSpeed = 5f;
-            const float taxiSpeed = 18f;
-            const float airborneAltitude = 35f;
-            const float altitudeTolerance = 0.25f;
+            const float taxiSpeed = 50f;
+
+            const float constantAltitudeTolerance = 0.25f;
+            const float groundAltitudeTolerance = 1.5f;
+
+            const float rapidClimbThreshold = 3f;
+            const float rapidDescentThreshold = -3f;
 
             if (!_aircraftHistory.TryGetValue(
                     entity,
@@ -323,65 +326,64 @@ namespace FlightTracker.Systems
             float altitudeChange =
                 altitude - history.PreviousAltitude;
 
-            bool hasNoMovement =
+            float absoluteAltitudeChange =
+                math.abs(altitudeChange);
+
+            bool isStopped =
                 speed <= stoppedSpeed;
 
-            bool hasMinimalMovement =
+            bool isMovingSlowly =
                 speed > stoppedSpeed &&
-                speed <= minimalMovementSpeed;
+                speed <= taxiSpeed;
 
-            bool hasNoAltitudeChange =
-                math.abs(altitudeChange) <= altitudeTolerance;
+            bool altitudeIsConstant =
+                absoluteAltitudeChange <=
+                constantAltitudeTolerance;
+
+            bool altitudeIsNearlyConstant =
+                absoluteAltitudeChange <=
+                groundAltitudeTolerance;
 
             string status;
 
-            // Do not change this: fully stopped aircraft remain At Gate.
-            if (hasNoMovement && hasNoAltitudeChange)
+            // Fully stopped and stable.
+            if (isStopped && altitudeIsConstant)
             {
                 status = "At Gate";
             }
-            // Small movement without meaningful altitude change means taxiing.
-            else if (hasMinimalMovement && hasNoAltitudeChange)
+            // Slow horizontal movement with little vertical change.
+            else if (isMovingSlowly && altitudeIsNearlyConstant)
             {
-                status =
-                    history.LastStatus is
-                        "Arriving" or
-                        "Landed" or
-                        "Taxiing to Gate"
-                        ? "Taxiing to Gate"
-                        : "Taxiing for Departure";
+                status = "Taxiing";
             }
-            else if (altitude > airborneAltitude)
+            // Strong upward movement.
+            else if (altitudeChange >= rapidClimbThreshold)
             {
-                if (altitudeChange > altitudeTolerance)
-                {
-                    status = "Departed";
-                }
-                else if (altitudeChange < -altitudeTolerance)
-                {
-                    status = "Arriving";
-                }
-                else
-                {
-                    status = "Airborne";
-                }
+                status = "Taking Off";
             }
-            else if (speed <= taxiSpeed)
+            // Strong downward movement.
+            else if (altitudeChange <= rapidDescentThreshold)
             {
-                status =
-                    history.LastStatus is
-                        "Arriving" or
-                        "Landed" or
-                        "Taxiing to Gate"
-                        ? "Taxiing to Gate"
-                        : "Taxiing for Departure";
+                status = "Descent";
+            }
+            // Gentle downward movement.
+            else if (altitudeChange < -constantAltitudeTolerance)
+            {
+                status = "Landing";
+            }
+            // Stable altitude while moving faster than taxi speed.
+            else if (altitudeIsConstant)
+            {
+                status = "Airborne";
+            }
+            // Gentle climb.
+            else if (altitudeChange > constantAltitudeTolerance)
+            {
+                status = "Airborne";
             }
             else
             {
-                status =
-                    altitudeChange > altitudeTolerance
-                        ? "Taking Off"
-                        : "Landing";
+                status = history.LastStatus;
             }
 
             _aircraftHistory[entity] =
