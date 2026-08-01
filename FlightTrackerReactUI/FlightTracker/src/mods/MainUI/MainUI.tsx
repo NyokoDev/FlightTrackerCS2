@@ -207,6 +207,7 @@ export default function FlightTracker({ onClose }: MainUIProps) {
             onClick={(event) => {
                 event.stopPropagation();
                 onClose();
+                trigger(mod.id, "ToggleUIFalse");
             }}
             aria-label="Close Flight Tracker"
             title="Close"

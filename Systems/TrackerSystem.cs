@@ -24,6 +24,8 @@ namespace FlightTracker.Systems
         public IReadOnlyList<TrackedFlight> TrackedFlights =>
             _trackedFlights;
 
+        public static bool UIEnabled { get; set; } = false;
+
         private struct AircraftHistory
         {
             public float PreviousAltitude;
@@ -88,6 +90,9 @@ namespace FlightTracker.Systems
                 return;
 
             _updateCounter = 0;
+
+            if (!UIEnabled)
+                return;
 
             try
             {

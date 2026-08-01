@@ -101,6 +101,9 @@ namespace FlightTracker.Systems
             Mod.Log.Info("[FlightTracker] TrackerUISystem created.");
 
 
+            UIBindings();
+
+
             RadarBindings();
 
             AddUpdateBinding(
@@ -169,6 +172,44 @@ namespace FlightTracker.Systems
 
                 throw;
             }
+        }
+
+        private void UIBindings()
+        {
+            AddUpdateBinding(
+                new GetterValueBinding<bool>(
+                    MOD_UI,
+                    "UIEnabled",
+                    () => TrackerSystem.UIEnabled
+                )
+            );
+
+            AddBinding(
+                new TriggerBinding(
+                    MOD_UI,
+                    "ToggleUIEnabled",
+                    ToggleUIEnabled
+                )
+            );
+
+            AddBinding(
+               new TriggerBinding(
+                   MOD_UI,
+                   "ToggleUIFalse",
+                   ToggleUIFalse
+               )
+           );
+        
+        }
+
+        private void ToggleUIFalse()
+        {
+            TrackerSystem.UIEnabled = false;
+        }
+
+        private void ToggleUIEnabled()
+        {
+            TrackerSystem.UIEnabled = !TrackerSystem.UIEnabled;
         }
 
         private void RadarBindings()
